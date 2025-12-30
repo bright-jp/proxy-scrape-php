@@ -1,27 +1,27 @@
-[![Promo](https://brightdata.com/static/github_promo_15.png?md5=105367-daeb786e)](https://brightdata.com/?promo=github15) 
-# PHP Proxy Server: How to Set Up Proxies in PHP
+[![Promo](https://brightdata.jp/static/github_promo_15.png?md5=105367-daeb786e)](https://brightdata.jp/?promo=github15) 
+# PHP Proxy Server: PHPでプロキシを設定する方法
 
-Learn how to set up a proxy in PHP using cURL, `file_get_contents()`, and Symfony. You'll also see how to use Bright Data's [residential proxies](https://brightdata.com/proxy-types/residential-proxies) in PHP for web scraping and IP rotation. This guide is also available on the [Bright Data blog](https://brightdata.com/blog/how-tos/php-proxy-servers).
+cURL、`file_get_contents()`、Symfony を使用して PHP でプロキシを設定する方法を学びます。また、WebスクレイピングとIPローテーションのために、PHPでBright Dataの[residential proxies](https://brightdata.jp/proxy-types/residential-proxies)を使用する方法もご紹介します。このガイドは[Bright Data blog](https://brightdata.jp/blog/how-tos/php-proxy-servers)でもご覧いただけます。
 
-- [Requirements](#requirenments)
-  - [Setting Up a Local Proxy Server in Apache](#setting-up-a-local-proxy-server-in-apache)
-- [Using Proxies in PHP](#using-proxies-in-php)
-  - [Proxy Integration With cURL](#proxy-integration-with-curl)
-  - [Proxy Integration Using `file_get_contents()`](#proxy-integration-using-file_get_contents)
-  - [Proxy Integration in Sympfony](#proxy-integration-in-symfony)
-- [Testing Proxy Integration in PHP](#testing-proxy-integration-in-php)
-- [Bright Data Proxy Integration in PHP](#bright-data-proxy-integration-in-php)
-  - [Residential Proxy Setup](#residential-proxy-setup)
-  - [Web Scraping Example Through an Authenticated Proxy](#web-scraping-example-through-an-authenticated-proxy)
-  - [Testing IP Rotation](#testing-ip-rotation)
+- [要件](#requirenments)
+  - [Apacheでローカルプロキシサーバーをセットアップする](#setting-up-a-local-proxy-server-in-apache)
+- [PHPでプロキシを使用する](#using-proxies-in-php)
+  - [cURLでのプロキシ統合](#proxy-integration-with-curl)
+  - [`file_get_contents()`を使用したプロキシ統合](#proxy-integration-using-file_get_contents)
+  - [Sympfonyでのプロキシ統合](#proxy-integration-in-symfony)
+- [PHPでのプロキシ統合をテストする](#testing-proxy-integration-in-php)
+- [PHPでのBright Dataプロキシ統合](#bright-data-proxy-integration-in-php)
+  - [レジデンシャルプロキシのセットアップ](#residential-proxy-setup)
+  - [認証付きプロキシ経由のWebスクレイピング例](#web-scraping-example-through-an-authenticated-proxy)
+  - [IPローテーションのテスト](#testing-ip-rotation)
 
 ## Requirenments
 
-Verify that you have [PHP 8+](https://www.php.net/downloads.php), [Composer](https://getcomposer.org/download/), and [Apache](https://httpd.apache.org/download.cgi) installed on your machine. Otherwise, download the installers by clicking on the previous links, launch them, and follow the instructions.
+お使いのマシンに[PHP 8+](https://www.php.net/downloads.php)、[Composer](https://getcomposer.org/download/)、[Apache](https://httpd.apache.org/download.cgi)がインストールされていることを確認してください。インストールされていない場合は、上記リンクをクリックしてインストーラーをダウンロードし、起動して手順に従ってください。
 
-Make sure the Apache service is up and running.
+Apacheサービスが起動して稼働していることを確認してください。
 
-Create a folder for your PHP project, enter it, and initialize a new Composer application inside it:
+PHPプロジェクト用のフォルダーを作成し、そこに移動して、内部で新しいComposerアプリケーションを初期化します。
 
 ```bash
 mkdir <PHP_PROJECT_FOLDER_NAME>
@@ -29,13 +29,13 @@ cd <PHP_PROJECT_FOLDER_NAME>
 composer init
 ```
 
-**Note**: On Windows, we recommend using WSL ([Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install)).
+**Note**: Windowsでは、WSL（[Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install)）の使用を推奨します。
 
 ### Setting Up a Local Proxy Server in Apache
 
-Configure your Apache local web server to operate as a forward proxy server.
+ApacheのローカルWebサーバーがフォワードプロキシサーバーとして動作するように設定します。
 
-First, enable the [`mod_proxy`](https://httpd.apache.org/docs/2.4/mod/mod_proxy.html), [`mod_proxy_http`](https://httpd.apache.org/docs/2.4/mod/mod_proxy_http.html), and [`mod_proxy_connect`](https://httpd.apache.org/docs/2.4/mod/mod_proxy_connect.html) modules with these commands:
+まず、次のコマンドで[`mod_proxy`](https://httpd.apache.org/docs/2.4/mod/mod_proxy.html)、[`mod_proxy_http`](https://httpd.apache.org/docs/2.4/mod/mod_proxy_http.html)、[`mod_proxy_connect`](https://httpd.apache.org/docs/2.4/mod/mod_proxy_connect.html)モジュールを有効化します。
 
 ```bash
 sudo a2enmod proxy
@@ -43,14 +43,14 @@ sudo a2enmod proxy_http
 sudo a2enmod proxy_connect
 ```
 
-Then, create a new [virtual host configuration file](https://httpd.apache.org/docs/2.4/vhosts/) called `proxy.conf` inside `/etc/apache2/sites-available/` as a copy of the default virtual host configuration file `000-default.conf`:
+次に、`/etc/apache2/sites-available/`内に、デフォルトのバーチャルホスト設定ファイル`000-default.conf`をコピーして、`proxy.conf`という新しい[virtual host configuration file](https://httpd.apache.org/docs/2.4/vhosts/)を作成します。
 
 ```bash
 cd /etc/apache2/sites-available/
 sudo cp 000-default.conf proxy.conf
 ```
 
-Initialize `proxy.conf` with the proxy definition logic below:
+以下のプロキシ定義ロジックで`proxy.conf`を初期化します。
 
 ```
 <VirtualHost *:80>
@@ -82,23 +82,23 @@ Initialize `proxy.conf` with the proxy definition logic below:
 </VirtualHost>
 ```
 
-Register the new Apache virtual host with:
+次のコマンドで、新しいApacheバーチャルホストを登録します。
 
 ```bash
 sudo a2ensite proxy.conf
 ```
 
-Lastly, reload the Apache server:
+最後に、Apacheサーバーをリロードします。
 
 ```bash
 service apache2 reload
 ```
 
-You now have a local proxy server listening on `http://localhost:80`.
+これで、`http://localhost:80`で待ち受けるローカルプロキシサーバーが用意できました。
 
 ## Using Proxies in PHP
 
-See how to integrate a proxy in PHP into the following technologies:
+以下の技術に、PHPでプロキシを統合する方法を見ていきます。
 
 - [cURL](https://www.php.net/manual/en/book.curl.php)
 - [`file_get_contents()`](https://www.php.net/manual/en/function.file-get-contents.php)
@@ -106,7 +106,7 @@ See how to integrate a proxy in PHP into the following technologies:
 
 ### Proxy Integration With cURL
 
-Use the [`CURLOPT_PROXY`](https://curl.se/libcurl/c/CURLOPT_PROXY.html) option to specify a proxy server in PHP using the cURL library, as in the `curl_proxy.php` snippet:
+cURLライブラリを使用してPHPでプロキシサーバーを指定するには、[`CURLOPT_PROXY`](https://curl.se/libcurl/c/CURLOPT_PROXY.html)オプションを使用します。以下の`curl_proxy.php`のスニペットのとおりです。
 
 ```php
 // the URL of the proxy server
@@ -144,7 +144,7 @@ curl_close($ch);
 
 ### Proxy Integration Using `file_get_contents()`
 
-Use the `proxy` option in `file_get_contents()` to set a proxy server, as in the `file_get_contents_proxy.php` snippet below:
+`file_get_contents()`でプロキシサーバーを設定するには、`proxy`オプションを使用します。以下の`file_get_contents_proxy.php`のスニペットのとおりです。
 
 ```php
 // define the proxy server to be used for HTTP/HTTPS requests
@@ -171,17 +171,17 @@ if ($response === false) {
 }
 ```
 
-**Note**: The protocol of the proxy server in the `proxy` option needs to be `tcp` and not `http`.
+**Note**: `proxy`オプションに指定するプロキシサーバーのプロトコルは、`http`ではなく`tcp`である必要があります。
 
 ### Proxy Integration in Symfony
 
-Install the [`BrowserKit`](https://symfony.com/doc/current/components/browser_kit.html) and [`HTTP Client`](https://symfony.com/doc/current/http_client.html) Symfony components:
+Symfonyコンポーネントの[`BrowserKit`](https://symfony.com/doc/current/components/browser_kit.html)と[`HTTP Client`](https://symfony.com/doc/current/http_client.html)をインストールします。
 
 ```bash
 composer require symfony/browser-kit symfony/http-client
 ```
 
-Specify a proxy server through the [`proxy`](https://symfony.com/doc/current/http_client.html#http-proxies) option in `HttpClient` when making an HTTP request using `HttpBrowser`, as in the `symfony_proxy.php` snippet:
+`HttpBrowser`を使用してHTTPリクエストを行う際に、`HttpClient`の[`proxy`](https://symfony.com/doc/current/http_client.html#http-proxies)オプションでプロキシサーバーを指定します。以下の`symfony_proxy.php`のスニペットのとおりです。
 
 ```php
 // include the Composer autoload file
@@ -210,13 +210,13 @@ echo $content;
 
 ## Testing Proxy Integration in PHP
 
-Use the command below to launch any of the three PHP proxy integration scripts:
+以下のコマンドを使用して、3つのPHPプロキシ統合スクリプトのいずれかを起動します。
 
 ```bash
 php <PHP_SCRIPT_NAME>
 ```
 
-Regardless of the script you execute, the result will be something like this:
+どのスクリプトを実行しても、結果は次のようになります。
 
 ```json
 {
@@ -231,13 +231,13 @@ Regardless of the script you execute, the result will be something like this:
 }
 ```
 
-Take a look at `access.log`, the Apache log file that keeps track of the requests made by the proxy:
+プロキシによって行われたリクエストを追跡するApacheログファイル`access.log`を確認してみてください。
 
 ```
 tail -n 50 /var/log/apache2/access.log
 ```
 
-The last line indicates that the request was successfully proxied to `httpbin.org` and the response status code was `200`:
+最終行は、リクエストが`httpbin.org`へ正常にプロキシされ、レスポンスのステータスコードが`200`であったことを示します。
 
 ```
 ::1 - - [13/Apr/2024:18:53:22 +0200] "CONNECT httpbin.org:443 HTTP/1.0" 200 6138 "-" "-"
@@ -245,13 +245,13 @@ The last line indicates that the request was successfully proxied to `httpbin.or
 
 ## Bright Data Proxy Integration in PHP
 
-Bright Data provides [premium proxies](https://brightdata.com/proxy-types) that automatically rotate the exit IP for you. Let's see how to use them for web scraping in a PHP script using cURL.
+Bright Dataは、出口IPを自動でローテーションする[premium proxies](https://brightdata.jp/proxy-types)を提供しています。cURLを使用したPHPスクリプトで、これらをWebスクレイピングに利用する方法を見ていきましょう。
 
 ### Residential Proxy Setup
 
-[Sign up for Bright Data](https://brightdata.com/cp/start) to start a free trial. Navigate to the "Proxies & Scraping Infrastructure" dashboard and click "Get Started" on the "Residential Proxy" card.
+無料トライアルを開始するために、[Bright Dataにサインアップ](https://brightdata.jp/cp/start)してください。「Proxies & Scraping Infrastructure」ダッシュボードに移動し、「Residential Proxy」カードの「Get Started」をクリックします。
 
-Follow the procedure, set up a residential proxy, and retrieve the following credentials:
+手順に従ってレジデンシャルプロキシをセットアップし、次の認証情報を取得してください。
 
 - `<BRIGHTDATA_PROXY_HOST>`
 - `<BRIGHTDATA_PROXY_PORT>`
@@ -260,7 +260,7 @@ Follow the procedure, set up a residential proxy, and retrieve the following cre
 
 ### Web Scraping Example Through an Authenticated Proxy
 
-Use the Bright Data authenticated residential proxy to connect to the ["Proxy server" Wikipedia page](https://en.wikipedia.org/wiki/Proxy_server) and scrape data from it with [`DOMDocument`](https://www.php.net/manual/en/class.domdocument.php), as in the `curl_proxy_scraping.php` snippet:
+Bright Dataの認証付きレジデンシャルプロキシを使用して、["Proxy server" Wikipedia page](https://en.wikipedia.org/wiki/Proxy_server)に接続し、[`DOMDocument`](https://www.php.net/manual/en/class.domdocument.php)でデータをスクレイピングします。以下の`curl_proxy_scraping.php`スニペットのとおりです。
 
 ```php
 // Bright Data proxy details
@@ -318,7 +318,7 @@ if (curl_errno($ch)) {
 curl_close($ch);
 ```
 
-The output will be:
+出力は次のようになります。
 
 ```
 Content:
@@ -338,7 +338,7 @@ Headings:
 
 ### Testing IP Rotation
 
-Run the PHP proxy script `curl_proxy_brightdata.php` that targets [`http://lumtest.com/myip.json`](http://lumtest.com/myip.json), a special endpoint that returns information about your IP:
+IPに関する情報を返す特別なエンドポイントである[`http://lumtest.com/myip.json`](http://lumtest.com/myip.json)をターゲットにしたPHPプロキシスクリプト`curl_proxy_brightdata.php`を実行します。
 
 ```php
 <?php
@@ -367,4 +367,4 @@ if (curl_errno($ch)) {
 curl_close($ch);
 ```
 
-Execute the script several times. Each time, you'll see different IPs from different locations.
+スクリプトを複数回実行してください。毎回、異なる場所からの異なるIPが表示されます。
